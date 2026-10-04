@@ -37,6 +37,14 @@ Jellyfin Web is the frontend used for most of the clients available for end user
 <img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-web/multi-auto.svg" alt="Detailed Translation Status"/>
 </a>
 
+## Developing this fork
+
+See [AGENTS.md](AGENTS.md) for frontend guidance. The paired setup and cross-repository
+feature guides live in the backend fork:
+[local development](https://github.com/Dhruv-Raghu/media-server/blob/master/DEVELOPMENT.md)
+and [feature development](https://github.com/Dhruv-Raghu/media-server/blob/master/docs/FEATURE_DEVELOPMENT.md).
+With sibling checkouts, open `../media-server/DEVELOPMENT.md` locally.
+
 ## Build Process
 
 ### Dependencies
