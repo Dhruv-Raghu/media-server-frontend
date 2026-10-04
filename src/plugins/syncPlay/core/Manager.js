@@ -230,6 +230,11 @@ class Manager {
             case 'StateUpdate':
                 Events.trigger(this, 'group-state-update', [cmd.Data.State, cmd.Data.Reason]);
                 break;
+            case 'Reaction':
+                if (this.isSyncPlayEnabled() && cmd.GroupId === this.groupInfo?.GroupId) {
+                    Events.trigger(this, 'reaction', [cmd.Data]);
+                }
+                break;
             case 'GroupDoesNotExist':
                 toast(globalize.translate('MessageSyncPlayGroupDoesNotExist'));
                 break;

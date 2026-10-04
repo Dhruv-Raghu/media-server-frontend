@@ -5,6 +5,7 @@
             <span class="secondary-icon material-icons play" aria-hidden="true"></span>
         </div>
     </div>
+    <div class="syncPlayReactionOverlay" aria-live="polite"></div>
     <div class="upNextContainer hide"></div>
     <div class="videoOsdBottom videoOsdBottom-maincontrols">
         <div class="osdControls">
@@ -76,6 +77,19 @@
                 <button is="paper-icon-button-light" class="btnAudio hide autoSize" title="${Audio}">
                     <span class="xlargePaperIconButton material-icons audiotrack" aria-hidden="true"></span>
                 </button>
+                <div class="syncPlayReactionControls hide">
+                    <button type="button" class="btnSyncPlayReaction autoSize" title="${Reactions}" aria-label="${Reactions}" aria-expanded="false">
+                        <span class="xlargePaperIconButton material-icons sentiment_satisfied" aria-hidden="true"></span>
+                    </button>
+                    <div class="syncPlayReactionPicker hide" role="group" aria-label="${Reactions}">
+                        <button type="button" data-reaction-id="like" aria-label="${ReactionLike}" title="${ReactionLike}">👍</button>
+                        <button type="button" data-reaction-id="heart" aria-label="${ReactionHeart}" title="${ReactionHeart}">❤️</button>
+                        <button type="button" data-reaction-id="laugh" aria-label="${ReactionLaugh}" title="${ReactionLaugh}">😂</button>
+                        <button type="button" data-reaction-id="wow" aria-label="${ReactionWow}" title="${ReactionWow}">😮</button>
+                        <button type="button" data-reaction-id="clap" aria-label="${ReactionClap}" title="${ReactionClap}">👏</button>
+                        <button type="button" data-reaction-id="celebrate" aria-label="${ReactionCelebrate}" title="${ReactionCelebrate}">🎉</button>
+                    </div>
+                </div>
                 <div class="volumeButtons hide-mouse-idle-tv">
                     <button is="paper-icon-button-light" class="buttonMute autoSize" title="${Mute} (M)" aria-label="${Mute}">
                         <span class="xlargePaperIconButton material-icons volume_up" aria-hidden="true"></span>

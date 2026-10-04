@@ -17,6 +17,7 @@ import mediaInfo from 'components/mediainfo/mediainfo';
 import focusManager from 'components/focusManager';
 import Events from 'utils/events';
 import globalize from 'lib/globalize';
+import toast from 'components/toast/toast';
 import { appHost } from 'components/apphost';
 import layoutManager from 'components/layoutManager';
 import * as userSettings from 'scripts/settings/userSettings';
@@ -2035,6 +2036,102 @@ export default function (view) {
 
     const SyncPlay = pluginManager.firstOfType(PluginType.SyncPlay)?.instance;
     if (SyncPlay) {
+        const reactionEmojis = {
+            like: '👍',
+            heart: '❤️',
+            laugh: '😂',
+            wow: '😮',
+            clap: '👏',
+            celebrate: '🎉'
+        };
+        const reactionControls = view.querySelector('.syncPlayReactionControls');
+        const reactionButton = view.querySelector('.btnSyncPlayReaction');
+        const reactionPicker = view.querySelector('.syncPlayReactionPicker');
+        const reactionOverlay = view.querySelector('.syncPlayReactionOverlay');
+        let lastReactionSentAt = 0;
+
+        const closeReactionPicker = () => {
+            reactionPicker.classList.add('hide');
+            reactionButton.setAttribute('aria-expanded', 'false');
+        };
+
+        const updateReactionControls = () => {
+            const enabled = SyncPlay.Manager.isSyncPlayEnabled();
+            reactionControls.classList.toggle('hide', !enabled);
+            if (!enabled) {
+                closeReactionPicker();
+                reactionOverlay.replaceChildren();
+            }
+        };
+
+        const onReaction = (_event, reaction) => {
+            const emoji = reactionEmojis[reaction.ReactionId];
+            if (!emoji || !SyncPlay.Manager.isSyncPlayEnabled()) return;
+
+            while (reactionOverlay.childElementCount >= 16) {
+                reactionOverlay.firstElementChild.remove();
+            }
+
+            const bubble = document.createElement('div');
+            bubble.className = 'syncPlayReactionBubble';
+            bubble.textContent = emoji;
+
+            const video = [...document.querySelectorAll('video')].find(element => element.videoWidth && element.videoHeight && element.getClientRects().length);
+            const videoBounds = video?.getBoundingClientRect() ?? reactionOverlay.getBoundingClientRect();
+            const videoAspectRatio = video ? video.videoWidth / video.videoHeight : videoBounds.width / videoBounds.height;
+            const contentWidth = Math.min(videoBounds.width, videoBounds.height * videoAspectRatio);
+            const contentHeight = contentWidth / videoAspectRatio;
+            const contentLeft = videoBounds.left + (videoBounds.width - contentWidth) / 2;
+            const contentTop = videoBounds.top + (videoBounds.height - contentHeight) / 2;
+            bubble.style.left = `${contentLeft + contentWidth * (0.08 + Math.random() * 0.84)}px`;
+            bubble.style.top = `${contentTop + contentHeight * (0.3 + Math.random() * 0.6)}px`;
+            bubble.style.setProperty('--reaction-drift', `${(Math.random() - 0.5) * 60}px`);
+            bubble.style.setProperty('--reaction-rise', `${Math.min(130, contentHeight * 0.25)}px`);
+            reactionOverlay.appendChild(bubble);
+            setTimeout(() => bubble.remove(), 3000);
+        };
+
+        reactionButton.addEventListener('click', () => {
+            if (!SyncPlay.Manager.isSyncPlayEnabled()) return;
+            const opening = reactionPicker.classList.contains('hide');
+            reactionPicker.classList.toggle('hide', !opening);
+            reactionButton.setAttribute('aria-expanded', String(opening));
+            showOsd();
+        });
+
+        reactionPicker.addEventListener('click', (event) => {
+            const button = event.target.closest('button[data-reaction-id]');
+            if (!button || !SyncPlay.Manager.isSyncPlayEnabled()) return;
+
+            showOsd();
+            if (Date.now() - lastReactionSentAt < 300) return;
+            lastReactionSentAt = Date.now();
+            SyncPlay.Manager.getController().react(button.dataset.reactionId).catch(() => {
+                lastReactionSentAt = 0;
+                toast(globalize.translate('ReactionFailed'));
+            });
+        });
+
+        reactionPicker.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeReactionPicker();
+                reactionButton.focus();
+            }
+        });
+
+        const onSyncPlayEnabled = () => updateReactionControls();
+        Events.on(SyncPlay.Manager, 'enabled', onSyncPlayEnabled);
+        Events.on(SyncPlay.Manager, 'reaction', onReaction);
+        view.addEventListener('viewshow', updateReactionControls);
+        view.addEventListener('viewbeforehide', () => {
+            closeReactionPicker();
+            reactionOverlay.replaceChildren();
+        });
+        view.addEventListener('viewdestroy', () => {
+            Events.off(SyncPlay.Manager, 'enabled', onSyncPlayEnabled);
+            Events.off(SyncPlay.Manager, 'reaction', onReaction);
+        });
+
         Events.on(SyncPlay.Manager, 'enabled', (_event, enabled) => {
             if (!enabled) {
                 const syncPlayIcon = view.querySelector('#syncPlayIcon');

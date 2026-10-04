@@ -53,6 +53,21 @@ class Controller {
     }
 
     /**
+     * Sends a reaction to the current SyncPlay group.
+     * @param {string} reactionId The reaction identifier.
+     * @returns {Promise} The server request.
+     */
+    react(reactionId) {
+        const apiClient = this.manager.getApiClient();
+        return apiClient.ajax({
+            url: apiClient.getUrl('SyncPlay/Reaction'),
+            type: 'POST',
+            data: JSON.stringify({ ReactionId: reactionId }),
+            contentType: 'application/json'
+        });
+    }
+
+    /**
      * Seeks playback to specified position in SyncPlay group.
      * @param {number} positionTicks The position.
      */
